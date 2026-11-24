@@ -21,21 +21,6 @@
 
 ---
 
-## 👥 Academic Capstone Project Team
-
-**Institution:** Medi-Caps University, Indore (`MCU-IND`)  
-**Department:** Computer Science & Engineering  
-**Course:** B.Tech CSE (Final Year Capstone / Lab Experiment No. 02)
-
-| Member | Enrollment No. | Project Responsibility |
-|---|---|---|
-| **Shweta Kumari** | `EN24CS3010995` | Project Lead & Full-Stack System Integration |
-| **Siddhi Jain** | `EN24CS3010997` | UI/UX Design System & Frontend Architecture |
-| **Siddhi Lakhotia** | `EN24CS3010998` | Database Architecture & Prisma Schema Design |
-| **Shubhi Rajoliya** | `EN24CS3010994` | Backend RESTful APIs & Quality Assurance |
-
----
-
 ## 🎯 Executive Overview & Problem Statement
 
 Placement information at most universities is scattered across unstructured WhatsApp groups, informal hearsay, and outdated spreadsheets. Juniors often prepare blind without verified insights into visiting companies, eligibility cutoffs, compensation brackets, or specific round-by-round interview patterns.
@@ -274,7 +259,6 @@ Detailed step-by-step instructions are documented in [`deployment-guide.md`](./d
 
 ---
 
-## 📄 License & Academic Attribution
+## 📄 License
 
-Developed for academic evaluation at **Medi-Caps University, Indore**.  
-Designed and implemented by **Shweta Kumari, Siddhi Jain, Siddhi Lakhotia, and Shubhi Rajoliya**.
+MIT License. Developed for CampusConnect.
