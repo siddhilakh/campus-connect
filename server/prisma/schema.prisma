@@ -1,0 +1,273 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model College {
+  id             String   @id @default(cuid())
+  name           String
+  code           String   @unique
+  address        String
+  website        String?
+  logo           String?
+  placementEmail String?
+  departments    String   @default("Computer Science, Information Technology, Electronics, Mechanical")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  users             User[]
+  companies         Company[]
+  placementRecords  PlacementRecord[]
+  placementStats    PlacementStatistic[]
+  experiences       InterviewExperience[]
+  resources         Resource[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  collegeId    String
+  college      College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  email        String   @unique
+  password     String
+  name         String
+  role         String   @default("STUDENT") // STUDENT, SENIOR, PLACEMENT_ADMIN, SYSTEM_ADMIN
+  department   String?
+  batch        String?
+  rollNumber   String?
+  avatar       String?
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  seniorProfile     SeniorProfile?
+  experiences       InterviewExperience[]
+  questionsAsked    Question[]            @relation("StudentQuestions")
+  questionsReceived Question[]            @relation("SeniorQuestions")
+  answers           Answer[]
+  bookmarks         Bookmark[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+}
+
+model SeniorProfile {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentCompany          String
+  jobRole                 String
+  packageLpa              Float?
+  graduationYear          String
+  bio                     String
+  linkedinUrl             String?
+  githubUrl               String?
+  expertiseTopics         String   @default("DSA, Web Dev, Interviews")
+  isAvailableForMentorship Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model Company {
+  id                  String   @id @default(cuid())
+  collegeId           String
+  college             College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  name                String
+  industry            String
+  logo                String?
+  website             String?
+  description         String
+  tier                String   @default("Tier 1") // Tier 1, Super Dream, Dream, Core
+  batch               String
+  rolesOffered        String
+  eligibilityCriteria String
+  minCgpa             Float?   @default(6.5)
+  allowedBranches     String   @default("CSE, IT, ECE")
+  packageRange        String
+  averagePackageLpa   Float?
+  highestPackageLpa   Float?
+  status              String   @default("ACTIVE") // ACTIVE, UPCOMING, COMPLETED, ARCHIVED
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  placementRecords PlacementRecord[]
+  experiences      InterviewExperience[]
+  resources        Resource[]
+}
+
+model PlacementRecord {
+  id          String   @id @default(cuid())
+  collegeId   String
+  college     College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  studentName String
+  rollNumber  String
+  department  String
+  batch       String
+  role        String
+  packageLpa  Float
+  offerDate   DateTime @default(now())
+  offerType   String   @default("FULL_TIME") // FULL_TIME, INTERNSHIP_TO_PPO, INTERNSHIP
+  isVerified  Boolean  @default(true)
+  verifiedBy  String?
+  source      String   @default("Official Campus Recruitment Drive")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PlacementStatistic {
+  id                     String   @id @default(cuid())
+  collegeId              String
+  college                College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  academicYear           String   // e.g. "2025-26", "2024-25"
+  totalStudents          Int
+  eligibleStudents       Int
+  placedStudents         Int
+  placementPercentage    Float
+  highestPackageLpa      Float
+  averagePackageLpa      Float
+  medianPackageLpa       Float
+  lowestPackageLpa       Float
+  totalCompaniesVisited  Int
+  totalOffersMade        Int
+  departmentBreakdown    String   // JSON string
+  packageDistribution    String   // JSON string
+  sourceInfo             String   @default("University Central Career Cell")
+  lastUpdated            DateTime @default(now())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model InterviewExperience {
+  id                  String   @id @default(cuid())
+  collegeId           String
+  college             College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  companyId           String
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  authorId            String
+  author              User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  role                String
+  batch               String
+  packageLpa          Float?
+  difficulty          String   @default("Medium") // Easy, Medium, Hard
+  outcome             String   @default("Selected") // Selected, Rejected, Offer Extended
+  overallSummary      String
+  preparationStrategy String
+  tipsAndAdvice       String
+  topicsCovered       String   // Comma separated e.g. "DSA, SQL, OOP, OS"
+  status              String   @default("APPROVED") // PENDING, APPROVED, HIDDEN, ARCHIVED, REJECTED
+  isVerified          Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  rounds    InterviewRound[]
+  questions Question[]
+  bookmarks Bookmark[]
+}
+
+model InterviewRound {
+  id              String              @id @default(cuid())
+  experienceId    String
+  experience      InterviewExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  roundNumber     Int
+  roundName       String              // e.g. "Online Aptitude & Coding", "Technical Interview"
+  durationMinutes Int?
+  description     String
+  questionsAsked  String
+  tips            String?
+}
+
+model Question {
+  id           String              @id @default(cuid())
+  studentId    String
+  student      User                @relation("StudentQuestions", fields: [studentId], references: [id], onDelete: Cascade)
+  seniorId     String
+  senior       User                @relation("SeniorQuestions", fields: [seniorId], references: [id], onDelete: Cascade)
+  experienceId String?
+  experience   InterviewExperience? @relation(fields: [experienceId], references: [id], onDelete: SetNull)
+  title        String
+  content      String
+  isAnswered   Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  answers Answer[]
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Bookmark {
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experienceId String
+  experience   InterviewExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime            @default(now())
+
+  @@unique([userId, experienceId])
+}
+
+model Resource {
+  id           String   @id @default(cuid())
+  collegeId    String
+  college      College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  title        String
+  category     String   // "DSA & Coding", "System Design", "Core CS", "Aptitude & Reasoning", "HR & Behavioral"
+  description  String
+  difficulty   String   @default("Medium") // Beginner, Intermediate, Advanced
+  resourceType String   @default("Article & Practice") // Article, Video, Cheat Sheet, Interactive
+  url          String
+  tags         String   @default("Prep, Guide")
+  companyId    String?
+  company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  role         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("SYSTEM") // QUESTION_RECEIVED, ANSWER_RECEIVED, MODERATION_UPDATE, PLACEMENT_UPDATE, SYSTEM
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ModerationRecord {
+  id          String   @id @default(cuid())
+  targetType  String   // EXPERIENCE, QUESTION, ANSWER
+  targetId    String
+  action      String   // APPROVED, REJECTED, HIDDEN, ARCHIVED
+  reason      String?
+  moderatedBy String   // Admin User Name / Email
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
