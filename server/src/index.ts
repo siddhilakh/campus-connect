@@ -10,6 +10,10 @@ import seniorRoutes from './routes/seniors.routes';
 import resourceRoutes from './routes/resources.routes';
 import notificationRoutes from './routes/notifications.routes';
 import adminRoutes from './routes/admin.routes';
+import readinessRoutes from './routes/readiness.routes';
+import applicationRoutes from './routes/applications.routes';
+import practiceRoutes from './routes/practice.routes';
+import mentorshipRoutes from './routes/mentorship.routes';
 
 dotenv.config();
 
@@ -55,6 +59,10 @@ app.use('/api/seniors', seniorRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/readiness', readinessRoutes);
+app.use('/api/applications', applicationRoutes);
+app.use('/api/practice', practiceRoutes);
+app.use('/api/mentorship', mentorshipRoutes);
 
 // 404 Route handler
 app.use((req: Request, res: Response) => {

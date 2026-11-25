@@ -232,3 +232,103 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface ReadinessProgress {
+  id: string;
+  userId: string;
+  aptitude: number;
+  dsa: number;
+  coreCs: number;
+  communication: number;
+  resumePreparation: number;
+  overallPercentage: number;
+  updatedAt: string;
+}
+
+export type ApplicationStatus = 'Interested' | 'Applied' | 'Assessment' | 'Interview' | 'Selected' | 'Rejected';
+
+export interface PlacementApplication {
+  id: string;
+  userId: string;
+  companyName: string;
+  role: string;
+  status: ApplicationStatus;
+  applicationDate: string;
+  packageLpa?: number | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PracticeQuestion {
+  id: string;
+  category: 'Aptitude' | 'Technical MCQ' | 'SQL' | 'DSA' | string;
+  difficulty: 'Easy' | 'Medium' | 'Hard' | string;
+  title: string;
+  question: string;
+  options: string[];
+  correctIdx: number;
+  explanation: string;
+  userAttempt?: {
+    selectedIdx: number;
+    isCorrect: boolean;
+    createdAt: string;
+  } | null;
+}
+
+export interface PracticeStats {
+  totalQuestions: number;
+  attemptedCount: number;
+  correctCount: number;
+  accuracy: number;
+  categoryStats: Array<{
+    category: string;
+    total: number;
+    attempted: number;
+    correct: number;
+  }>;
+}
+
+export interface MentorshipRequest {
+  id: string;
+  studentId: string;
+  seniorId: string;
+  topic: string;
+  message: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  responseNote?: string | null;
+  createdAt: string;
+  student?: {
+    id: string;
+    name: string;
+    avatar?: string | null;
+    department?: string | null;
+    batch?: string | null;
+    rollNumber?: string | null;
+  };
+  senior?: {
+    id: string;
+    name: string;
+    avatar?: string | null;
+    department?: string | null;
+    batch?: string | null;
+    seniorProfile?: SeniorProfile | null;
+  };
+}
+
+export interface PlacementAnalytics {
+  totalVerifiedOffers: number;
+  companySelections: Array<{ company: string; selections: number; avgPackageLpa: number }>;
+  roleStatistics: Array<{ role: string; count: number; avgPackageLpa: number; highestPackageLpa: number }>;
+  packageDistribution: Array<{ range: string; count: number; label?: string }>;
+  liveBrackets: Array<{ range: string; count: number }>;
+  placementTrends: Array<{
+    year: string;
+    placementPercentage: number;
+    averagePackageLpa: number;
+    highestPackageLpa: number;
+    placedStudents: number;
+  }>;
+  dataLabel: string;
+  lastUpdated: string;
+}

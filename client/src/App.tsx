@@ -12,6 +12,10 @@ import { CompaniesPage } from './pages/CompaniesPage';
 import { SeniorConnectPage } from './pages/SeniorConnectPage';
 import { ExperienceDetailPage } from './pages/ExperienceDetailPage';
 import { ResourcesPage } from './pages/ResourcesPage';
+import { ReadinessPage } from './pages/ReadinessPage';
+import { ApplicationTrackerPage } from './pages/ApplicationTrackerPage';
+import { PracticeZonePage } from './pages/PracticeZonePage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { HelpFaqPage } from './pages/HelpFaqPage';
 
@@ -120,6 +124,10 @@ export const App: React.FC = () => {
           <Route path="/senior-connect" element={<SeniorConnectPage />} />
           <Route path="/senior-connect/experiences/:id" element={<ExperienceDetailPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/readiness" element={<ReadinessPage />} />
+          <Route path="/applications" element={<ApplicationTrackerPage />} />
+          <Route path="/practice" element={<PracticeZonePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/help" element={<HelpFaqPage />} />
         </Route>

@@ -296,6 +296,97 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Placement Readiness Tracker
+  getReadiness() {
+    return this.request<{ success: boolean; readiness: any }>('/readiness');
+  }
+
+  updateReadiness(data: {
+    aptitude: number;
+    dsa: number;
+    coreCs: number;
+    communication: number;
+    resumePreparation: number;
+  }) {
+    return this.request<{ success: boolean; message: string; readiness: any }>('/readiness', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Placement Application Tracker
+  getApplications(params?: { status?: string; search?: string }) {
+    const clean: Record<string, string> = {};
+    if (params?.status) clean.status = params.status;
+    if (params?.search) clean.search = params.search;
+    const query = new URLSearchParams(clean).toString();
+    return this.request<{ success: boolean; applications: any[] }>(`/applications?${query}`);
+  }
+
+  createApplication(data: any) {
+    return this.request<{ success: boolean; message: string; application: any }>('/applications', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  updateApplication(id: string, data: any) {
+    return this.request<{ success: boolean; message: string; application: any }>(`/applications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  deleteApplication(id: string) {
+    return this.request<{ success: boolean; message: string }>(`/applications/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Practice Zone
+  getPracticeQuestions(params?: { category?: string; difficulty?: string }) {
+    const clean: Record<string, string> = {};
+    if (params?.category) clean.category = params.category;
+    if (params?.difficulty) clean.difficulty = params.difficulty;
+    const query = new URLSearchParams(clean).toString();
+    return this.request<{ success: boolean; questions: any[]; stats: any }>(`/practice/questions?${query}`);
+  }
+
+  submitPracticeAttempt(questionId: string, selectedIdx: number) {
+    return this.request<{ success: boolean; isCorrect: boolean; correctIdx: number; explanation: string }>('/practice/attempt', {
+      method: 'POST',
+      body: JSON.stringify({ questionId, selectedIdx }),
+    });
+  }
+
+  // Senior Mentorship
+  getMyMentorshipRequests() {
+    return this.request<{ success: boolean; requests: any[] }>('/mentorship/my');
+  }
+
+  getReceivedMentorshipRequests() {
+    return this.request<{ success: boolean; requests: any[] }>('/mentorship/received');
+  }
+
+  createMentorshipRequest(data: { seniorId: string; topic: string; message: string }) {
+    return this.request<{ success: boolean; message: string; request: any }>('/mentorship', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  respondToMentorshipRequest(id: string, status: 'ACCEPTED' | 'DECLINED', responseNote?: string) {
+    return this.request<{ success: boolean; message: string; request: any }>(`/mentorship/${id}/respond`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, responseNote }),
+    });
+  }
+
+  // Placement Analytics
+  getPlacementAnalytics() {
+    return this.request<{ success: boolean; analytics: any }>('/placements/analytics');
+  }
 }
 
 export const api = new ApiClient();

@@ -21,7 +21,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { api } from '../api/client';
-import { InterviewExperience, User, Company, Question } from '../types';
+import { InterviewExperience, User, Company, Question, MentorshipRequest } from '../types';
 
 export const SeniorConnectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -58,9 +58,17 @@ export const SeniorConnectPage: React.FC = () => {
   const [tabSuccess, setTabSuccess] = useState('');
   const [tabError, setTabError] = useState('');
 
+  // Mentorship Request Modal & State
+  const [mentorshipRequests, setMentorshipRequests] = useState<MentorshipRequest[]>([]);
+  const [mentorshipSenior, setMentorshipSenior] = useState<User | null>(null);
+  const [mentorTopic, setMentorTopic] = useState('');
+  const [mentorMessage, setMentorMessage] = useState('');
+  const [mentorSuccess, setMentorSuccess] = useState('');
+  const [mentorError, setMentorError] = useState('');
+
   const loadData = async () => {
     try {
-      const [expRes, senRes, compRes, qRes] = await Promise.all([
+      const [expRes, senRes, compRes, qRes, mRes] = await Promise.all([
         api.getExperiences({
           search,
           companyId: companyFilter,
@@ -71,7 +79,8 @@ export const SeniorConnectPage: React.FC = () => {
         }),
         api.getSeniors({ search }),
         api.getCompanies(),
-        api.getQuestions()
+        api.getQuestions(),
+        api.getMyMentorshipRequests()
       ]);
 
       if (expRes.success) setExperiences(expRes.experiences);
@@ -83,6 +92,7 @@ export const SeniorConnectPage: React.FC = () => {
       }
       if (compRes.success) setCompanies(compRes.companies);
       if (qRes.success) setQuestions(qRes.questions);
+      if (mRes.success) setMentorshipRequests(mRes.requests);
     } catch (err) {
       console.error(err);
     } finally {
@@ -629,76 +639,131 @@ export const SeniorConnectPage: React.FC = () => {
 
       {/* TAB 2: SENIOR MENTORS */}
       {activeTab === 'seniors' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {seniors.map((senior, idx) => (
-            <motion.div
-              key={senior.id}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              whileHover={{ y: -3 }}
-              className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-brand-500/40 flex flex-col justify-between transition-colors space-y-4 shadow-lg"
-            >
-              <div>
-                <div className="flex items-start gap-3 mb-3">
-                  <img
-                    src={senior.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
-                    alt={senior.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-700"
-                  />
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-white text-base">{senior.name}</h3>
-                      <BadgeCheck className="w-4 h-4 text-sky-400" />
+        <div className="space-y-6">
+          {/* My Mentorship Requests Status */}
+          {mentorshipRequests.length > 0 && (
+            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span>My Mentorship Requests ({mentorshipRequests.length})</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {mentorshipRequests.map((req) => (
+                  <div key={req.id} className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white">{req.senior?.name}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        req.status === 'ACCEPTED'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : req.status === 'DECLINED'
+                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      }`}>
+                        {req.status}
+                      </span>
                     </div>
-                    <p className="text-xs font-semibold text-brand-400">
-                      {senior.seniorProfile?.currentCompany} · {senior.seniorProfile?.jobRole}
-                    </p>
-                    <p className="text-[10px] text-slate-400">{senior.department} · Batch {senior.batch}</p>
+                    <p className="text-brand-300 font-semibold">{req.topic}</p>
+                    {req.responseNote && (
+                      <p className="text-slate-300 bg-slate-900 p-2 rounded-lg border border-slate-800">
+                        <strong>Senior reply:</strong> {req.responseNote}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {seniors.map((senior, idx) => (
+              <motion.div
+                key={senior.id}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ y: -3 }}
+                className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-brand-500/40 flex flex-col justify-between transition-colors space-y-4 shadow-lg"
+              >
+                <div>
+                  <div className="flex items-start gap-3 mb-3">
+                    <img
+                      src={senior.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
+                      alt={senior.name}
+                      className="w-12 h-12 rounded-xl object-cover border border-slate-700"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-bold text-white text-base">{senior.name}</h3>
+                        <BadgeCheck className="w-4 h-4 text-sky-400" />
+                      </div>
+                      <p className="text-xs font-semibold text-brand-400">
+                        {senior.seniorProfile?.currentCompany} · {senior.seniorProfile?.jobRole}
+                      </p>
+                      <p className="text-[10px] text-slate-400">{senior.department} · Batch {senior.batch}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                    {senior.seniorProfile?.bio}
+                  </p>
+
+                  <div className="text-[11px] text-slate-400 bg-slate-850 p-2.5 rounded-xl border border-slate-800">
+                    <span className="font-bold text-slate-300 block mb-0.5">Mentorship Areas:</span>
+                    <span>{senior.seniorProfile?.expertiseTopics}</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                  {senior.seniorProfile?.bio}
-                </p>
+                <div className="pt-3 border-t border-slate-800 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    {senior.seniorProfile?.linkedinUrl ? (
+                      <a
+                        href={senior.seniorProfile.linkedinUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-slate-400 hover:text-brand-300 flex items-center gap-1"
+                      >
+                        <span>LinkedIn</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-slate-400">Verified Mentor</span>
+                    )}
+                  </div>
 
-                <div className="text-[11px] text-slate-400 bg-slate-850 p-2.5 rounded-xl border border-slate-800">
-                  <span className="font-bold text-slate-300 block mb-0.5">Mentorship Areas:</span>
-                  <span>{senior.seniorProfile?.expertiseTopics}</span>
+                  <div className="flex items-center gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setMentorshipSenior(senior);
+                        setMentorTopic('');
+                        setMentorMessage('');
+                        setMentorError('');
+                        setMentorSuccess('');
+                      }}
+                      className="flex-1 px-3 py-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 text-xs font-bold transition-colors"
+                    >
+                      Request Mentorship
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setAskModalSenior(senior);
+                        setModalError('');
+                        setModalSuccess('');
+                      }}
+                      className="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand-600/20 transition-colors"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Ask</span>
+                    </motion.button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                {senior.seniorProfile?.linkedinUrl ? (
-                  <a
-                    href={senior.seniorProfile.linkedinUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-slate-400 hover:text-brand-300 flex items-center gap-1"
-                  >
-                    <span>LinkedIn</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                ) : (
-                  <span className="text-[11px] text-slate-400">Verified Mentor</span>
-                )}
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.94 }}
-                  onClick={() => {
-                    setAskModalSenior(senior);
-                    setModalError('');
-                    setModalSuccess('');
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand-600/20 transition-colors"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Ask Question</span>
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -923,6 +988,114 @@ export const SeniorConnectPage: React.FC = () => {
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Send Question</span>
+                  </motion.button>
+                </div>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Request Mentorship Modal */}
+      {mentorshipSenior && (
+        <div
+          onClick={() => setMentorshipSenior(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative"
+          >
+            <button
+              onClick={() => setMentorshipSenior(null)}
+              aria-label="Close"
+              className="absolute top-5 right-5 text-slate-400 hover:text-white bg-slate-800 p-1.5 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h3 className="text-lg font-bold text-white mb-1">
+              Request Mentorship from {mentorshipSenior.name}
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              {mentorshipSenior.seniorProfile?.currentCompany} · {mentorshipSenior.seniorProfile?.jobRole}
+            </p>
+
+            {mentorSuccess && (
+              <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <span>{mentorSuccess}</span>
+              </div>
+            )}
+            {mentorError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+                {mentorError}
+              </div>
+            )}
+
+            {!mentorSuccess && (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!mentorTopic.trim() || !mentorMessage.trim()) {
+                    setMentorError('Please provide both a topic and a short message.');
+                    return;
+                  }
+                  try {
+                    const res = await api.createMentorshipRequest({
+                      seniorId: mentorshipSenior.id,
+                      topic: mentorTopic,
+                      message: mentorMessage
+                    });
+                    if (res.success) {
+                      setMentorSuccess(res.message);
+                      loadData();
+                      setTimeout(() => setMentorshipSenior(null), 1800);
+                    }
+                  } catch (err: any) {
+                    setMentorError(err.message || 'Failed to send request.');
+                  }
+                }}
+                className="space-y-3 text-xs"
+              >
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Mentorship Topic</label>
+                  <input
+                    type="text"
+                    value={mentorTopic}
+                    onChange={(e) => setMentorTopic(e.target.value)}
+                    placeholder="e.g. Resume Review & Mock Interview"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-850 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Message to Senior</label>
+                  <textarea
+                    rows={4}
+                    value={mentorMessage}
+                    onChange={(e) => setMentorMessage(e.target.value)}
+                    placeholder="Briefly introduce yourself and what guidance you're looking for..."
+                    className="w-full px-3 py-2 rounded-lg bg-slate-850 border border-slate-700 text-white focus:outline-none focus:border-brand-500 resize-none"
+                  />
+                </div>
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setMentorshipSenior(null)}
+                    className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.96 }}
+                    type="submit"
+                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Send Request</span>
                   </motion.button>
                 </div>
               </form>

@@ -637,6 +637,254 @@ async function main() {
     }
   });
 
+  // 13. Seed Readiness Progress for Student
+  await prisma.readinessProgress.upsert({
+    where: { userId: student.id },
+    update: {},
+    create: {
+      userId: student.id,
+      aptitude: 70,
+      dsa: 60,
+      coreCs: 65,
+      communication: 80,
+      resumePreparation: 75
+    }
+  });
+
+  // 14. Seed Placement Applications for Student
+  const existingApps = await prisma.placementApplication.count({ where: { userId: student.id } });
+  if (existingApps === 0) {
+    await prisma.placementApplication.createMany({
+      data: [
+        {
+          userId: student.id,
+          collegeId: college.id,
+          companyName: 'Microsoft',
+          role: 'Software Development Engineer I',
+          status: 'Interview',
+          packageLpa: 44.0,
+          notes: 'Cleared Codility OA (3/3 problems). Technical Round 1 scheduled this Friday.'
+        },
+        {
+          userId: student.id,
+          collegeId: college.id,
+          companyName: 'TCS',
+          role: 'TCS Digital Engineer',
+          status: 'Assessment',
+          packageLpa: 7.0,
+          notes: 'Registered for TCS NQT drive. Revising Quant & SQL.'
+        },
+        {
+          userId: student.id,
+          collegeId: college.id,
+          companyName: 'Cisco Systems',
+          role: 'Software Engineer',
+          status: 'Applied',
+          packageLpa: 17.5,
+          notes: 'Submitted resume via college placement portal.'
+        },
+        {
+          userId: student.id,
+          collegeId: college.id,
+          companyName: 'Infosys',
+          role: 'Specialist Programmer',
+          status: 'Interested',
+          packageLpa: 9.5,
+          notes: 'Target drive for next month. Practicing DP and Graphs.'
+        },
+        {
+          userId: student.id,
+          collegeId: college.id,
+          companyName: 'Accenture',
+          role: 'Associate Software Engineer',
+          status: 'Selected',
+          packageLpa: 4.5,
+          notes: 'Received provisional offer letter from TPO!'
+        }
+      ]
+    });
+  }
+
+  // 15. Seed Practice Questions (Aptitude, Technical MCQ, SQL, DSA)
+  const existingPractice = await prisma.practiceQuestion.count();
+  if (existingPractice === 0) {
+    await prisma.practiceQuestion.createMany({
+      data: [
+        // Aptitude
+        {
+          category: 'Aptitude',
+          difficulty: 'Easy',
+          title: 'Time, Speed & Distance — Train Crossing',
+          question: 'A train 150 meters long passes a pole in 15 seconds and another train of the same length travelling in opposite direction in 12 seconds. What is the speed of the second train?',
+          options: JSON.stringify(['10 m/s', '15 m/s', '20 m/s', '25 m/s']),
+          correctIdx: 1,
+          explanation: 'Speed of first train = 150 / 15 = 10 m/s. Combined relative speed = (150 + 150) / 12 = 25 m/s. Therefore, speed of second train = 25 - 10 = 15 m/s.'
+        },
+        {
+          category: 'Aptitude',
+          difficulty: 'Medium',
+          title: 'Probability — Dice Sum',
+          question: 'Two unbiased dice are thrown simultaneously. What is the probability of getting a sum greater than 9?',
+          options: JSON.stringify(['1/6', '1/4', '1/3', '5/36']),
+          correctIdx: 0,
+          explanation: 'Favorable outcomes for sum > 9 (i.e. 10, 11, 12): (4,6), (5,5), (6,4), (5,6), (6,5), (6,6) = 6 outcomes. Total outcomes = 36. Probability = 6/36 = 1/6.'
+        },
+        {
+          category: 'Aptitude',
+          difficulty: 'Hard',
+          title: 'Work & Pipes',
+          question: 'Pipe A can fill a tank in 12 hours, Pipe B in 15 hours, and Pipe C can empty it in 20 hours. If all three are opened together, in how many hours will the tank be full?',
+          options: JSON.stringify(['8 hours', '10 hours', '12 hours', '15 hours']),
+          correctIdx: 1,
+          explanation: 'Net part filled per hour = 1/12 + 1/15 - 1/20 = (5 + 4 - 3)/60 = 6/60 = 1/10. Thus, the tank will be full in 10 hours.'
+        },
+        // Technical MCQ
+        {
+          category: 'Technical MCQ',
+          difficulty: 'Easy',
+          title: 'OS — Virtual Memory & Thrashing',
+          question: 'Which condition directly causes Thrashing in an Operating System?',
+          options: JSON.stringify([
+            'Excessive paging activity where CPU spends more time swapping pages than executing',
+            'Deadlock between two I/O devices',
+            'CPU cache hit ratio reaching 99%',
+            'Round Robin time quantum being too large'
+          ]),
+          correctIdx: 0,
+          explanation: 'Thrashing occurs when the working set of active processes exceeds physical RAM, causing continuous page faults and swapping.'
+        },
+        {
+          category: 'Technical MCQ',
+          difficulty: 'Medium',
+          title: 'OOP — Runtime Polymorphism',
+          question: 'In C++ / Java, how is runtime polymorphism (dynamic method dispatch) achieved?',
+          options: JSON.stringify([
+            'Function overloading',
+            'Operator overloading',
+            'Method overriding with virtual/base-class references',
+            'Inline functions'
+          ]),
+          correctIdx: 2,
+          explanation: 'Runtime polymorphism is resolved at runtime via virtual method tables (vtable) when a base class reference points to a derived class object.'
+        },
+        {
+          category: 'Technical MCQ',
+          difficulty: 'Hard',
+          title: 'Computer Networks — TCP Congestion Control',
+          question: 'During TCP Slow Start, how does the congestion window (cwnd) grow on each received ACK before reaching ssthresh?',
+          options: JSON.stringify([
+            'Linearly by 1 byte',
+            'Exponentially (doubles every RTT)',
+            'Logarithmically',
+            'Remains constant'
+          ]),
+          correctIdx: 1,
+          explanation: 'In TCP Slow Start, cwnd increases by 1 MSS per ACK received, which results in exponential doubling every Round-Trip Time (RTT).'
+        },
+        // SQL
+        {
+          category: 'SQL',
+          difficulty: 'Easy',
+          title: 'SQL — WHERE vs HAVING',
+          question: 'Which clause is used to filter aggregated groups produced by GROUP BY in SQL?',
+          options: JSON.stringify(['WHERE', 'HAVING', 'ORDER BY', 'DISTINCT']),
+          correctIdx: 1,
+          explanation: 'WHERE filters individual rows before grouping; HAVING filters groups after GROUP BY and aggregate functions (COUNT, SUM, AVG) are computed.'
+        },
+        {
+          category: 'SQL',
+          difficulty: 'Medium',
+          title: 'SQL — Second Highest Salary',
+          question: 'Which query reliably returns the second highest distinct salary from an Employee table?',
+          options: JSON.stringify([
+            'SELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee)',
+            'SELECT salary FROM Employee LIMIT 2',
+            'SELECT MIN(salary) FROM Employee',
+            'SELECT COUNT(salary) FROM Employee GROUP BY salary'
+          ]),
+          correctIdx: 0,
+          explanation: 'Comparing against the subquery (SELECT MAX(salary) FROM Employee) finds the maximum salary strictly less than the highest salary.'
+        },
+        {
+          category: 'SQL',
+          difficulty: 'Hard',
+          title: 'DBMS — BCNF vs 3NF',
+          question: 'A relation is in Boyce-Codd Normal Form (BCNF) if and only if for every non-trivial functional dependency X -> Y:',
+          options: JSON.stringify([
+            'Y is a prime attribute',
+            'X is a superkey',
+            'X and Y are disjoint',
+            'There are no transitive dependencies only'
+          ]),
+          correctIdx: 1,
+          explanation: 'BCNF strictly requires that for every non-trivial functional dependency X -> Y, the determinant X must be a superkey.'
+        },
+        // DSA
+        {
+          category: 'DSA',
+          difficulty: 'Easy',
+          title: 'Time Complexity — Binary Search',
+          question: 'What is the worst-case time complexity of Binary Search on a sorted array of N elements?',
+          options: JSON.stringify(['O(1)', 'O(log N)', 'O(N)', 'O(N log N)']),
+          correctIdx: 1,
+          explanation: 'Each comparison halves the search space, resulting in at most log2(N) steps, or O(log N).'
+        },
+        {
+          category: 'DSA',
+          difficulty: 'Medium',
+          title: 'Data Structures — LRU Cache',
+          question: 'Which combination of data structures gives O(1) time complexity for both get() and put() in an LRU Cache?',
+          options: JSON.stringify([
+            'Stack + Binary Search Tree',
+            'Hash Map + Doubly Linked List',
+            'Min Heap + Queue',
+            'Trie + Dynamic Array'
+          ]),
+          correctIdx: 1,
+          explanation: 'A Hash Map provides O(1) key lookup to nodes, while a Doubly Linked List allows O(1) removal and insertion at the head/tail.'
+        },
+        {
+          category: 'DSA',
+          difficulty: 'Hard',
+          title: 'Graph Algorithms — Dijkstra Limitation',
+          question: 'Why does Dijkstra’s shortest path algorithm fail on graphs with negative edge weights?',
+          options: JSON.stringify([
+            'It uses DFS instead of BFS',
+            'Its greedy assumption that once a node is finalized its shortest distance cannot be improved breaks with negative edges',
+            'Priority queues cannot store negative integers',
+            'It only works on directed acyclic graphs'
+          ]),
+          correctIdx: 1,
+          explanation: 'Dijkstra greedily marks the minimum-distance unvisited node as finalized; a later negative edge could yield a shorter path, violating the greedy invariant.'
+        }
+      ]
+    });
+  }
+
+  // 16. Seed Mentorship Requests
+  const existingMentorships = await prisma.mentorshipRequest.count({ where: { studentId: student.id } });
+  if (existingMentorships === 0) {
+    await prisma.mentorshipRequest.create({
+      data: {
+        studentId: student.id,
+        seniorId: senior.id,
+        topic: 'Mock Interview & Microsoft OA Prep',
+        message: 'Hi Priya, I am aiming for product-based SDE roles this placement season. Would love a 30-minute resume review and guidance on DP patterns.',
+        status: 'ACCEPTED',
+        responseNote: 'Happy to help, Aarav! Share your resume link and practice 10 medium DP problems this week.'
+      }
+    });
+    await prisma.mentorshipRequest.create({
+      data: {
+        studentId: student.id,
+        seniorId: seniorRahul.id,
+        topic: 'AWS Cloud & System Design Basics',
+        message: 'Hi Rahul, could you guide me on how to showcase cloud projects on my resume for SDE-1 interviews?',
+        status: 'PENDING'
+      }
+    });
+  }
+
   console.log('Database seeding completed successfully!');
 }
 

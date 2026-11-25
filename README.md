@@ -31,7 +31,11 @@ Placement information at most universities is scattered across unstructured What
 3. **Senior Connect & Interview Breakdown:** Authentic senior contributions detailing every selection round (Online Coding Assessments, Technical Whiteboard rounds, Low-Level Design, and HR discussions).
 4. **Student–Senior Mentorship Threads:** 1-on-1 Q&A discussion threads where juniors ask specific preparation questions and seniors answer directly from their dashboards.
 5. **Administrative Controls & Moderation:** Training & Placement Cell controls to verify placement offers, manage recruiters, and review/moderate student-submitted interview experiences.
-6. **Multi-Tenant Foundation:** College-aware database isolation so additional universities can be onboarded seamlessly.
+6. **Placement Readiness Tracker:** Track progress across Aptitude, DSA, Core CS, Communication, and Resume Preparation with overall readiness score.
+7. **Placement Application Tracker:** Manage personal campus applications through Interested, Applied, Assessment, Interview, Selected, and Rejected with Kanban and Table views.
+8. **Practice Zone:** Interactive quizzes across Aptitude, Technical MCQ, SQL, and DSA with difficulty levels, instant explanations, and accuracy scoring.
+9. **Placement Analytics & Senior Mentorship:** Multi-chart analytics (package distribution, trends, company & role stats) and 1-on-1 senior mentorship request/accept/decline workflows.
+10. **Multi-Tenant Foundation:** College-aware database isolation so additional universities can be onboarded seamlessly.
 
 ---
 
@@ -240,10 +244,14 @@ npx ts-node-dev src/test/smoke.test.ts
 [PASS] Microsoft experience has all 4 detailed interview rounds
 [PASS] Student-senior Q&A questions present (found: 2)
 [PASS] Senior reply present on student discussion thread
-[PASS] Curated preparation resources available (found: 7)
-[PASS] In-app notifications seeded across demo accounts (found: 4)
+[PASS] Curated preparation resources available (found: 14)
+[PASS] In-app notifications seeded across demo accounts (found: 8)
+[PASS] Placement Readiness Progress seeded for student
+[PASS] Placement applications seeded across pipeline stages (found: 5)
+[PASS] Practice Zone questions seeded across 4 categories (found: 12)
+[PASS] Senior mentorship requests seeded (found: 2)
 =======================================================
- Verification Completed: 23/23 Tests Passed!
+ Verification Completed: 27/27 Tests Passed!
 =======================================================
 ```
 

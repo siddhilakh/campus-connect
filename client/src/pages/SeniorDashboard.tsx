@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
-import { InterviewExperience, Question, Company } from '../types';
+import { InterviewExperience, Question, Company, MentorshipRequest } from '../types';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 
 export const SeniorDashboard: React.FC = () => {
@@ -57,16 +57,23 @@ export const SeniorDashboard: React.FC = () => {
   const [answeringQuestionId, setAnsweringQuestionId] = useState<string | null>(null);
   const [answerContent, setAnswerContent] = useState('');
 
+  // Mentorship requests state
+  const [mentorshipRequests, setMentorshipRequests] = useState<MentorshipRequest[]>([]);
+  const [respondingReqId, setRespondingReqId] = useState<string | null>(null);
+  const [responseNote, setResponseNote] = useState('');
+
   const loadData = async () => {
     try {
-      const [expRes, qRes, compRes] = await Promise.all([
+      const [expRes, qRes, compRes, mRes] = await Promise.all([
         api.getMySubmittedExperiences(),
         api.getReceivedQuestions(),
-        api.getCompanies()
+        api.getCompanies(),
+        api.getReceivedMentorshipRequests()
       ]);
 
       if (expRes.success) setExperiences(expRes.experiences);
       if (qRes.success) setQuestions(qRes.questions);
+      if (mRes.success) setMentorshipRequests(mRes.requests);
       if (compRes.success && compRes.companies.length > 0) {
         setCompanies(compRes.companies);
         setSelectedCompanyId(compRes.companies[0].id);
@@ -191,6 +198,19 @@ export const SeniorDashboard: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to answer:', err);
+    }
+  };
+
+  const handleRespondMentorship = async (id: string, status: 'ACCEPTED' | 'DECLINED') => {
+    try {
+      const res = await api.respondToMentorshipRequest(id, status, responseNote || undefined);
+      if (res.success) {
+        setRespondingReqId(null);
+        setResponseNote('');
+        loadData();
+      }
+    } catch (err) {
+      console.error('Mentorship response failed:', err);
     }
   };
 
@@ -330,8 +350,107 @@ export const SeniorDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Submitted Experiences & Received Questions (8 Cols) */}
+        {/* Right Column: Mentorship Requests, Received Questions & Submitted Experiences (8 Cols) */}
         <div className="lg:col-span-8 space-y-6">
+          {/* Mentorship Requests Received */}
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <span>Mentorship Requests ({mentorshipRequests.length})</span>
+                </h3>
+                <p className="text-xs text-slate-400">Accept or decline 1-on-1 mentorship requests from juniors</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {mentorshipRequests.length === 0 ? (
+                <div className="py-6 text-center text-slate-400 text-xs">
+                  No mentorship requests received yet.
+                </div>
+              ) : (
+                mentorshipRequests.map((req) => (
+                  <div key={req.id} className="p-4 rounded-xl bg-slate-850/60 border border-slate-800 space-y-2.5 text-xs">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-bold text-white">{req.student?.name}</span>
+                        <span className="text-slate-400 ml-2">
+                          ({req.student?.department} · Batch {req.student?.batch})
+                        </span>
+                        <h4 className="font-semibold text-brand-300 mt-1">{req.topic}</h4>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                        req.status === 'ACCEPTED'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : req.status === 'DECLINED'
+                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      }`}>
+                        {req.status}
+                      </span>
+                    </div>
+
+                    <p className="text-slate-300 leading-relaxed">{req.message}</p>
+
+                    {req.responseNote && (
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                        <span className="font-bold text-slate-400">Your note: </span>
+                        {req.responseNote}
+                      </div>
+                    )}
+
+                    {req.status === 'PENDING' && (
+                      respondingReqId === req.id ? (
+                        <div className="pt-2 border-t border-slate-800 space-y-2">
+                          <input
+                            type="text"
+                            value={responseNote}
+                            onChange={(e) => setResponseNote(e.target.value)}
+                            placeholder="Optional message for the student (e.g. Share your resume link)..."
+                            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-brand-500"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => setRespondingReqId(null)}
+                              className="px-3 py-1.5 text-slate-400 hover:text-white"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleRespondMentorship(req.id, 'DECLINED')}
+                              className="px-3 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 font-bold"
+                            >
+                              Decline
+                            </button>
+                            <button
+                              onClick={() => handleRespondMentorship(req.id, 'ACCEPTED')}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                            >
+                              Accept Request
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end gap-2 pt-1">
+                          <button
+                            onClick={() => {
+                              setRespondingReqId(req.id);
+                              setResponseNote('');
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-brand-600/15 hover:bg-brand-600 text-brand-300 hover:text-white border border-brand-500/30 font-bold transition-colors"
+                          >
+                            Respond (Accept / Decline)
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Questions Received from Students */}
           <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
             <div className="flex items-center justify-between mb-4">

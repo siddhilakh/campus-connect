@@ -4,6 +4,98 @@ import { authenticate, requireRole } from '../middleware/auth.middleware';
 
 const router = Router();
 
+// GET /api/placements/analytics (Rich analytics from actual DB records + seeded statistics)
+router.get('/analytics', authenticate, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const collegeId = req.collegeId!;
+
+    const [records, statsRows] = await Promise.all([
+      prisma.placementRecord.findMany({
+        where: { collegeId, isVerified: true },
+        include: { company: { select: { name: true, tier: true } } }
+      }),
+      prisma.placementStatistic.findMany({
+        where: { collegeId },
+        orderBy: { academicYear: 'asc' }
+      })
+    ]);
+
+    // 1. Company-wise selections from actual PlacementRecord rows
+    const companyMap = new Map<string, { company: string; selections: number; totalPkg: number }>();
+    for (const r of records) {
+      const name = r.company?.name || 'Other';
+      const cur = companyMap.get(name) || { company: name, selections: 0, totalPkg: 0 };
+      cur.selections += 1;
+      cur.totalPkg += r.packageLpa;
+      companyMap.set(name, cur);
+    }
+    const companySelections = Array.from(companyMap.values()).map((c) => ({
+      company: c.company,
+      selections: c.selections,
+      avgPackageLpa: parseFloat((c.totalPkg / c.selections).toFixed(2))
+    }));
+
+    // 2. Role-wise statistics from actual PlacementRecord rows
+    const roleMap = new Map<string, { role: string; count: number; totalPkg: number; maxPkg: number }>();
+    for (const r of records) {
+      const cur = roleMap.get(r.role) || { role: r.role, count: 0, totalPkg: 0, maxPkg: 0 };
+      cur.count += 1;
+      cur.totalPkg += r.packageLpa;
+      cur.maxPkg = Math.max(cur.maxPkg, r.packageLpa);
+      roleMap.set(r.role, cur);
+    }
+    const roleStatistics = Array.from(roleMap.values()).map((r) => ({
+      role: r.role,
+      count: r.count,
+      avgPackageLpa: parseFloat((r.totalPkg / r.count).toFixed(2)),
+      highestPackageLpa: r.maxPkg
+    }));
+
+    // 3. Package distribution (computed from records + latest PlacementStatistic)
+    const latestStat = statsRows[statsRows.length - 1];
+    let packageDistribution = [];
+    if (latestStat?.packageDistribution) {
+      try {
+        packageDistribution = JSON.parse(latestStat.packageDistribution);
+      } catch {}
+    }
+
+    // Also compute live bracket counts from PlacementRecord
+    const liveBrackets = [
+      { range: '₹3 - 6 LPA', count: records.filter((r) => r.packageLpa < 6).length },
+      { range: '₹6 - 10 LPA', count: records.filter((r) => r.packageLpa >= 6 && r.packageLpa < 10).length },
+      { range: '₹10 - 25 LPA', count: records.filter((r) => r.packageLpa >= 10 && r.packageLpa < 25).length },
+      { range: '₹25+ LPA', count: records.filter((r) => r.packageLpa >= 25).length }
+    ];
+
+    // 4. Placement trends from PlacementStatistic rows
+    const placementTrends = statsRows.map((s) => ({
+      year: s.academicYear,
+      placementPercentage: s.placementPercentage,
+      averagePackageLpa: s.averagePackageLpa,
+      highestPackageLpa: s.highestPackageLpa,
+      placedStudents: s.placedStudents
+    }));
+
+    res.json({
+      success: true,
+      analytics: {
+        totalVerifiedOffers: records.length,
+        companySelections,
+        roleStatistics,
+        packageDistribution,
+        liveBrackets,
+        placementTrends,
+        dataLabel: 'Live Institutional Records & Seeded Academic Demo Data',
+        lastUpdated: latestStat?.lastUpdated || new Date()
+      }
+    });
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({ success: false, message: 'Failed to load placement analytics.' });
+  }
+});
+
 // GET /api/placements/statistics
 router.get('/statistics', authenticate, async (req: Request, res: Response): Promise<void> => {
   try {

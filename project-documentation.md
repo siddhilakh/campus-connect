@@ -1,15 +1,4 @@
-# CampusConnect — Technical Project Documentation & SRS Architecture
 
-**Institution:** Medi-Caps University, Indore  
-**Course:** B.Tech Computer Science & Engineering  
-**Project:** Centralized Student Opportunity and Career Enhancement Platform (Experiment No. 02)  
-**Authors:**
-- Shweta Kumari (EN24CS3010995) — Project Lead & Full-Stack Integration
-- Siddhi Jain (EN24CS3010997) — UI/UX Design System & Client Architecture
-- Siddhi Lakhotia (EN24CS3010998) — Database Architecture & Schema Design
-- Shubhi Rajoliya (EN24CS3010994) — Backend REST APIs & Quality Assurance
-
----
 
 ## 1. System Overview
 

@@ -49,10 +49,15 @@ model User {
   questionsAsked    Question[]            @relation("StudentQuestions")
   questionsReceived Question[]            @relation("SeniorQuestions")
   answers           Answer[]
-  bookmarks         Bookmark[]
-  helpfulVotes      HelpfulVote[]
-  notifications     Notification[]
-  auditLogs         AuditLog[]
+  bookmarks                 Bookmark[]
+  helpfulVotes              HelpfulVote[]
+  notifications             Notification[]
+  auditLogs                 AuditLog[]
+  readinessProgress         ReadinessProgress?
+  placementApplications     PlacementApplication[]
+  practiceAttempts          PracticeAttempt[]
+  mentorshipRequestsSent    MentorshipRequest[]    @relation("StudentMentorshipRequests")
+  mentorshipRequestsReceived MentorshipRequest[]   @relation("SeniorMentorshipRequests")
 }
 
 model SeniorProfile {
@@ -285,4 +290,72 @@ model AuditLog {
   details    String?
   ipAddress  String?
   createdAt  DateTime @default(now())
+}
+
+model ReadinessProgress {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aptitude          Int      @default(40)
+  dsa               Int      @default(35)
+  coreCs            Int      @default(45)
+  communication     Int      @default(55)
+  resumePreparation Int      @default(60)
+  updatedAt         DateTime @updatedAt
+}
+
+model PlacementApplication {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collegeId       String
+  companyName     String
+  role            String
+  status          String   @default("Interested") // Interested, Applied, Assessment, Interview, Selected, Rejected
+  applicationDate DateTime @default(now())
+  packageLpa      Float?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PracticeQuestion {
+  id          String   @id @default(cuid())
+  category    String   // Aptitude, Technical MCQ, SQL, DSA
+  difficulty  String   @default("Medium") // Easy, Medium, Hard
+  title       String
+  question    String
+  options     String   // JSON array of 4 strings
+  correctIdx  Int      // 0-3
+  explanation String
+  createdAt   DateTime @default(now())
+
+  attempts PracticeAttempt[]
+}
+
+model PracticeAttempt {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    PracticeQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedIdx Int
+  isCorrect   Boolean
+  createdAt   DateTime         @default(now())
+
+  @@unique([userId, questionId])
+}
+
+model MentorshipRequest {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      User     @relation("StudentMentorshipRequests", fields: [studentId], references: [id], onDelete: Cascade)
+  seniorId     String
+  senior       User     @relation("SeniorMentorshipRequests", fields: [seniorId], references: [id], onDelete: Cascade)
+  topic        String
+  message      String
+  status       String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  responseNote String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

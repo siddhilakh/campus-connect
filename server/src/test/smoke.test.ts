@@ -87,6 +87,22 @@ async function runTests() {
     const notifs = await prisma.notification.findMany();
     assert(notifs.length >= 4, `In-app notifications seeded across demo accounts (found: ${notifs.length})`);
 
+    // Test 11: Placement Readiness Progress
+    const readiness = await prisma.readinessProgress.findUnique({ where: { userId: testUser!.id } });
+    assert(!!readiness && readiness.aptitude > 0 && readiness.dsa > 0, 'Placement Readiness Progress seeded for student');
+
+    // Test 12: Placement Application Tracker
+    const apps = await prisma.placementApplication.findMany({ where: { userId: testUser!.id } });
+    assert(apps.length >= 5, `Placement applications seeded across pipeline stages (found: ${apps.length})`);
+
+    // Test 13: Practice Zone Questions
+    const practiceQs = await prisma.practiceQuestion.findMany();
+    assert(practiceQs.length >= 12, `Practice Zone questions seeded across 4 categories (found: ${practiceQs.length})`);
+
+    // Test 14: Senior Mentorship Requests
+    const mentorships = await prisma.mentorshipRequest.findMany({ where: { studentId: testUser!.id } });
+    assert(mentorships.length >= 2, `Senior mentorship requests seeded (found: ${mentorships.length})`);
+
     console.log('=======================================================');
     console.log(` Verification Completed: ${passed}/${total} Tests Passed!`);
     console.log('=======================================================');
