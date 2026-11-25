@@ -60,7 +60,7 @@ export const Navbar: React.FC<{ title?: string; subtitle?: string }> = ({
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-850 border border-slate-800 text-xs text-slate-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-semibold text-slate-200">Medi-Caps University</span>
-            <span className="text-[10px] text-brand-400 font-mono">B.Tech Demo</span>
+            <span className="text-[10px] text-brand-400 font-mono">Placement Portal</span>
           </div>
 
           {/* Notifications Trigger */}

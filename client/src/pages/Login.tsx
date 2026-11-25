@@ -117,8 +117,8 @@ export const Login: React.FC = () => {
 
         {/* Footer info */}
         <div className="relative z-10 pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-          <span>SRS Experiment No. 02 · Medi-Caps University</span>
-          <span>B.Tech CSE Capstone Project</span>
+          <span>Medi-Caps University · Placement Portal</span>
+          <span>CampusConnect Career Suite</span>
         </div>
       </section>
 

@@ -296,7 +296,7 @@ export const Sidebar: React.FC = () => {
               }
             >
               <HelpCircle className="w-4 h-4" />
-              <span>Help & SRS Specs</span>
+              <span>Help & FAQ</span>
             </NavLink>
           </div>
         </div>
