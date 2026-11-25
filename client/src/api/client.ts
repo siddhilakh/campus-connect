@@ -1,4 +1,9 @@
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api';
+import { mockRequest } from '../mock/mockApi';
+
+const env = (import.meta as any).env || {};
+// Default: fully in-browser demo mode (logins in src/credentials, data in src/mock).
+// Set VITE_API_URL at build time to talk to a real backend instead.
+const API_BASE_URL: string = env.VITE_API_URL || '';
 
 class ApiClient {
   private getToken(): string | null {
@@ -16,10 +21,27 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    if (!API_BASE_URL) {
+      let body: any;
+      if (options.body) {
+        try {
+          body = JSON.parse(options.body as string);
+        } catch {
+          body = undefined;
+        }
+      }
+      return mockRequest<T>(endpoint, (options.method || 'GET').toUpperCase(), body);
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+    } catch {
+      throw new Error('Cannot reach the server. Check your connection and try again (the server may be waking up).');
+    }
 
     const data = await response.json();
 
