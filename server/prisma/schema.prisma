@@ -50,6 +50,7 @@ model User {
   questionsReceived Question[]            @relation("SeniorQuestions")
   answers           Answer[]
   bookmarks         Bookmark[]
+  helpfulVotes      HelpfulVote[]
   notifications     Notification[]
   auditLogs         AuditLog[]
 }
@@ -154,7 +155,9 @@ model InterviewExperience {
   batch               String
   packageLpa          Float?
   difficulty          String   @default("Medium") // Easy, Medium, Hard
+  interviewType       String   @default("On-Campus") // On-Campus, Off-Campus, PPO, Internship
   outcome             String   @default("Selected") // Selected, Rejected, Offer Extended
+  helpfulCount        Int      @default(0)
   overallSummary      String
   preparationStrategy String
   tipsAndAdvice       String
@@ -164,9 +167,21 @@ model InterviewExperience {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  rounds    InterviewRound[]
-  questions Question[]
-  bookmarks Bookmark[]
+  rounds       InterviewRound[]
+  questions    Question[]
+  bookmarks    Bookmark[]
+  helpfulVotes HelpfulVote[]
+}
+
+model HelpfulVote {
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experienceId String
+  experience   InterviewExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  createdAt    DateTime            @default(now())
+
+  @@unique([userId, experienceId])
 }
 
 model InterviewRound {

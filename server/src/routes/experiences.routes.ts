@@ -7,7 +7,7 @@ const router = Router();
 // GET /api/experiences (Search & list)
 router.get('/', authenticate, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { search, companyId, difficulty, outcome, role } = req.query;
+    const { search, companyId, difficulty, outcome, role, batch, interviewType } = req.query;
     const collegeId = req.collegeId!;
 
     const whereClause: any = {
@@ -23,6 +23,15 @@ router.get('/', authenticate, async (req: Request, res: Response): Promise<void>
     }
     if (outcome && outcome !== 'ALL') {
       whereClause.outcome = outcome as string;
+    }
+    if (batch && batch !== 'ALL') {
+      whereClause.batch = batch as string;
+    }
+    if (interviewType && interviewType !== 'ALL') {
+      whereClause.interviewType = interviewType as string;
+    }
+    if (role && role !== 'ALL') {
+      whereClause.role = { contains: role as string };
     }
 
     if (search) {
@@ -64,8 +73,12 @@ router.get('/', authenticate, async (req: Request, res: Response): Promise<void>
           where: { userId: req.user!.id },
           select: { id: true }
         },
+        helpfulVotes: {
+          where: { userId: req.user!.id },
+          select: { id: true }
+        },
         _count: {
-          select: { questions: true, bookmarks: true }
+          select: { questions: true, bookmarks: true, helpfulVotes: true }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -73,7 +86,8 @@ router.get('/', authenticate, async (req: Request, res: Response): Promise<void>
 
     const formatted = experiences.map((exp) => ({
       ...exp,
-      isBookmarked: exp.bookmarks.length > 0
+      isBookmarked: exp.bookmarks.length > 0,
+      isHelpful: exp.helpfulVotes.length > 0
     }));
 
     res.json({
@@ -126,6 +140,12 @@ router.get('/:id', authenticate, async (req: Request, res: Response): Promise<vo
         },
         bookmarks: {
           where: { userId: req.user!.id }
+        },
+        helpfulVotes: {
+          where: { userId: req.user!.id }
+        },
+        _count: {
+          select: { questions: true, bookmarks: true, helpfulVotes: true }
         }
       }
     });
@@ -139,7 +159,8 @@ router.get('/:id', authenticate, async (req: Request, res: Response): Promise<vo
       success: true,
       experience: {
         ...experience,
-        isBookmarked: experience.bookmarks.length > 0
+        isBookmarked: experience.bookmarks.length > 0,
+        isHelpful: experience.helpfulVotes.length > 0
       }
     });
   } catch (error) {
@@ -156,6 +177,7 @@ router.post('/', authenticate, requireRole('SENIOR', 'PLACEMENT_ADMIN', 'SYSTEM_
       batch,
       packageLpa,
       difficulty,
+      interviewType,
       outcome,
       overallSummary,
       preparationStrategy,
@@ -178,6 +200,7 @@ router.post('/', authenticate, requireRole('SENIOR', 'PLACEMENT_ADMIN', 'SYSTEM_
         batch: batch || '2024',
         packageLpa: packageLpa ? parseFloat(packageLpa) : null,
         difficulty: difficulty || 'Medium',
+        interviewType: interviewType || 'On-Campus',
         outcome: outcome || 'Selected',
         overallSummary,
         preparationStrategy,
@@ -239,15 +262,49 @@ router.post('/:id/bookmark', authenticate, async (req: Request, res: Response): 
       await prisma.bookmark.delete({
         where: { id: existing.id }
       });
-      res.json({ success: true, message: 'Bookmark removed.', isBookmarked: false });
+      const count = await prisma.bookmark.count({ where: { experienceId: id } });
+      res.json({ success: true, message: 'Bookmark removed.', isBookmarked: false, bookmarkCount: count });
     } else {
       await prisma.bookmark.create({
         data: { userId, experienceId: id }
       });
-      res.json({ success: true, message: 'Experience saved to bookmarks.', isBookmarked: true });
+      const count = await prisma.bookmark.count({ where: { experienceId: id } });
+      res.json({ success: true, message: 'Experience saved to bookmarks.', isBookmarked: true, bookmarkCount: count });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to toggle bookmark.' });
+  }
+});
+
+// POST /api/experiences/:id/helpful (Toggle helpful vote)
+router.post('/:id/helpful', authenticate, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    const existing = await prisma.helpfulVote.findUnique({
+      where: {
+        userId_experienceId: { userId, experienceId: id }
+      }
+    });
+
+    if (existing) {
+      await prisma.helpfulVote.delete({ where: { id: existing.id } });
+      const updated = await prisma.interviewExperience.update({
+        where: { id },
+        data: { helpfulCount: { decrement: 1 } }
+      });
+      res.json({ success: true, isHelpful: false, helpfulCount: Math.max(0, updated.helpfulCount) });
+    } else {
+      await prisma.helpfulVote.create({ data: { userId, experienceId: id } });
+      const updated = await prisma.interviewExperience.update({
+        where: { id },
+        data: { helpfulCount: { increment: 1 } }
+      });
+      res.json({ success: true, isHelpful: true, helpfulCount: updated.helpfulCount });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to toggle helpful vote.' });
   }
 });
 

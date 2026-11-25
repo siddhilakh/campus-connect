@@ -10,6 +10,7 @@ import { PlacementAdminDashboard } from './pages/PlacementAdminDashboard';
 import { SystemAdminDashboard } from './pages/SystemAdminDashboard';
 import { CompaniesPage } from './pages/CompaniesPage';
 import { SeniorConnectPage } from './pages/SeniorConnectPage';
+import { ExperienceDetailPage } from './pages/ExperienceDetailPage';
 import { ResourcesPage } from './pages/ResourcesPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { HelpFaqPage } from './pages/HelpFaqPage';
@@ -117,6 +118,7 @@ export const App: React.FC = () => {
           {/* Shared Discovery Pages */}
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/senior-connect" element={<SeniorConnectPage />} />
+          <Route path="/senior-connect/experiences/:id" element={<ExperienceDetailPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/help" element={<HelpFaqPage />} />

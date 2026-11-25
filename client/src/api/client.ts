@@ -116,8 +116,22 @@ class ApiClient {
   }
 
   // Interview Experiences
-  getExperiences(params?: { search?: string; companyId?: string; difficulty?: string; outcome?: string }) {
-    const query = new URLSearchParams(params as any).toString();
+  getExperiences(params?: {
+    search?: string;
+    companyId?: string;
+    difficulty?: string;
+    outcome?: string;
+    batch?: string;
+    role?: string;
+    interviewType?: string;
+  }) {
+    const cleanParams: Record<string, string> = {};
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== '') cleanParams[k] = v;
+      });
+    }
+    const query = new URLSearchParams(cleanParams).toString();
     return this.request<{ success: boolean; experiences: any[] }>(`/experiences?${query}`);
   }
 
@@ -133,7 +147,13 @@ class ApiClient {
   }
 
   toggleBookmark(id: string) {
-    return this.request<{ success: boolean; isBookmarked: boolean; message: string }>(`/experiences/${id}/bookmark`, {
+    return this.request<{ success: boolean; isBookmarked: boolean; bookmarkCount?: number; message: string }>(`/experiences/${id}/bookmark`, {
+      method: 'POST',
+    });
+  }
+
+  toggleHelpful(id: string) {
+    return this.request<{ success: boolean; isHelpful: boolean; helpfulCount: number }>(`/experiences/${id}/helpful`, {
       method: 'POST',
     });
   }

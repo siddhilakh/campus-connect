@@ -144,7 +144,9 @@ export interface InterviewExperience {
   batch: string;
   packageLpa?: number | null;
   difficulty: string;
+  interviewType?: string;
   outcome: string;
+  helpfulCount?: number;
   overallSummary: string;
   preparationStrategy: string;
   tipsAndAdvice: string;
@@ -153,6 +155,12 @@ export interface InterviewExperience {
   isVerified: boolean;
   rounds: InterviewRound[];
   isBookmarked?: boolean;
+  isHelpful?: boolean;
+  _count?: {
+    questions: number;
+    bookmarks: number;
+    helpfulVotes?: number;
+  };
   questions?: Question[];
   createdAt: string;
 }
