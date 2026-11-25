@@ -15,7 +15,6 @@
 
 **Centralized campus placement intelligence, senior-junior interview rounds sharing, and training & placement cell moderation portal.**
 
-*Compliant with Software Requirements Specification (SRS Experiment No. 02) — Medi-Caps University, Indore*
 
 </div>
 
@@ -28,14 +27,14 @@ Placement information at most universities is scattered across unstructured What
 **CampusConnect** solves this by establishing a unified institutional platform providing:
 1. **Verified Placement Intelligence:** Official batch statistics (placed students count, average CTC, highest package in LPA, recruiting companies) with interactive Recharts data visualizations.
 2. **Visiting Company Directory:** Complete database of recruiters (Microsoft, Amazon, TCS, Infosys, Accenture, Cisco) with tier categorizations, allowed branches, CGPA cutoffs, and package brackets.
-3. **Senior Connect & Interview Breakdown:** Authentic senior contributions detailing every selection round (Online Coding Assessments, Technical Whiteboard rounds, Low-Level Design, and HR discussions).
-4. **Student–Senior Mentorship Threads:** 1-on-1 Q&A discussion threads where juniors ask specific preparation questions and seniors answer directly from their dashboards.
+3. **Senior Connect & Interview Breakdown:** Searchable interview stories with 5-faceted filters (company, batch, role, difficulty, interview type), verified badges, helpful voting, bookmarking, and dedicated round-by-round detail pages (`/senior-connect/experiences/:id`).
+4. **Ask a Senior & 1-on-1 Mentorship:** Interactive **Ask a Senior** Q&A hub plus a full Senior Mentorship workflow where students send requests and seniors accept or decline with response notes.
 5. **Administrative Controls & Moderation:** Training & Placement Cell controls to verify placement offers, manage recruiters, and review/moderate student-submitted interview experiences.
-6. **Placement Readiness Tracker:** Track progress across Aptitude, DSA, Core CS, Communication, and Resume Preparation with overall readiness score.
-7. **Placement Application Tracker:** Manage personal campus applications through Interested, Applied, Assessment, Interview, Selected, and Rejected with Kanban and Table views.
+6. **Placement Readiness Tracker:** Track progress across Aptitude, DSA, Core CS, Communication, and Resume Preparation with an overall readiness score.
+7. **Placement Application Tracker:** Manage personal campus applications through Interested, Applied, Assessment, Interview, Selected, and Rejected with drag-and-drop Kanban, Table view, summary KPI cards, slide-over detail drawer, and upcoming interview reminders.
 8. **Practice Zone:** Interactive quizzes across Aptitude, Technical MCQ, SQL, and DSA with difficulty levels, instant explanations, and accuracy scoring.
-9. **Placement Analytics & Senior Mentorship:** Multi-chart analytics (package distribution, trends, company & role stats) and 1-on-1 senior mentorship request/accept/decline workflows.
-10. **Multi-Tenant Foundation:** College-aware database isolation so additional universities can be onboarded seamlessly.
+9. **Placement Analytics:** Multi-chart analytics (package distribution, batch trends, company-wise selections, and role-wise statistics) computed from database records.
+10. **Multi-Tenant Foundation:** College-aware database isolation so additional institutions can be onboarded seamlessly.
 
 ---
 
@@ -77,7 +76,8 @@ The application features an **in-app One-Click Demo Helper** on the login screen
   - **Framework:** React 18 with Vite for ultra-fast HMR and bundle optimization
   - **Language:** TypeScript for compile-time type safety across all components and API responses
   - **Styling:** Tailwind CSS with a custom deep navy, slate, and vibrant indigo SaaS palette
-  - **Charts:** Recharts (Interactive AreaChart for batch trends, BarChart for department breakdowns)
+  - **Charts:** Recharts (Interactive AreaChart, BarChart, and PieChart visualizations)
+  - **Animations:** Framer Motion for smooth transitions, tab indicators, and micro-interactions
   - **Icons:** Lucide React
   - **Routing:** React Router DOM v6 with role-based route guards (`<ProtectedRoute />`)
 - **Backend:**
@@ -86,7 +86,7 @@ The application features an **in-app One-Click Demo Helper** on the login screen
   - **Hashing:** `bcryptjs` for secure password encryption
   - **Validation:** Type-safe request payload handling
 - **Database & ORM:**
-  - **Prisma ORM:** 15 relational models covering colleges, users, senior profiles, companies, placements, rounds, questions, answers, bookmarks, resources, notifications, moderation, and audit logs.
+  - **Prisma ORM:** 20 relational models covering colleges, users, senior profiles, companies, placements, rounds, questions, answers, bookmarks, helpful votes, readiness progress, applications, practice questions & attempts, mentorship requests, resources, notifications, moderation, and audit logs.
   - **Dual Database Ready:** Zero-config local SQLite (`file:./dev.db`) for immediate offline evaluation, plus production PostgreSQL schema (`schema.postgres.prisma`) ready for Neon.tech.
 
 ---
@@ -108,16 +108,21 @@ CampusConnect/
 │   │   ├── context/
 │   │   │   └── AuthContext.tsx      # Global auth context & role redirect logic
 │   │   ├── pages/
-│   │   │   ├── CompaniesPage.tsx    # Filterable company directory & criteria modals
-│   │   │   ├── HelpFaqPage.tsx      # SRS compliance mapping, FAQ, and team credits
-│   │   │   ├── Login.tsx            # Split-screen SaaS login page
+│   │   │   ├── AnalyticsPage.tsx          # Package, trend, company & role charts
+│   │   │   ├── ApplicationTrackerPage.tsx # Drag-and-drop Kanban & Table tracker
+│   │   │   ├── CompaniesPage.tsx          # Filterable company directory & criteria modals
+│   │   │   ├── ExperienceDetailPage.tsx   # Dedicated full-round interview breakdown page
+│   │   │   ├── HelpFaqPage.tsx            # Searchable Help Center & FAQ
+│   │   │   ├── Login.tsx                  # Split-screen SaaS login page
 │   │   │   ├── PlacementAdminDashboard.tsx # Offer verification & moderation queue
-│   │   │   ├── ProfilePage.tsx      # Profile settings & saved bookmarks
-│   │   │   ├── ResourcesPage.tsx    # Curated DSA, System Design, and Core CS sheets
-│   │   │   ├── SeniorConnectPage.tsx # Round-by-round experiences & ask questions
-│   │   │   ├── SeniorDashboard.tsx  # Senior profile management & questions inbox
-│   │   │   ├── StudentDashboard.tsx # KPI summary, Recharts analytics, recent offers
-│   │   │   └── SystemAdminDashboard.tsx # User RBAC modifier & college settings
+│   │   │   ├── PracticeZonePage.tsx       # Aptitude, Tech MCQ, SQL & DSA quizzes
+│   │   │   ├── ProfilePage.tsx            # Profile settings & saved bookmarks
+│   │   │   ├── ReadinessPage.tsx          # 5-pillar placement readiness tracker
+│   │   │   ├── ResourcesPage.tsx          # Curated DSA, System Design, and Core CS sheets
+│   │   │   ├── SeniorConnectPage.tsx      # Experiences, Mentors & Ask a Senior hub
+│   │   │   ├── SeniorDashboard.tsx        # Senior profile, mentorship & Q&A inbox
+│   │   │   ├── StudentDashboard.tsx       # KPI summary, charts, reminders & offers
+│   │   │   └── SystemAdminDashboard.tsx   # User RBAC modifier & college settings
 │   │   ├── types/
 │   │   │   └── index.ts             # TypeScript interfaces for all data models
 │   │   ├── App.tsx                  # Application routes & guards
@@ -137,17 +142,21 @@ CampusConnect/
 │   │   ├── middleware/
 │   │   │   └── auth.middleware.ts   # JWT verification & RBAC permission guards
 │   │   ├── routes/
-│   │   │   ├── admin.routes.ts      # User management, moderation, college settings
-│   │   │   ├── auth.routes.ts       # Login, session verification, profile update
-│   │   │   ├── companies.routes.ts  # Recruiter CRUD and criteria endpoints
-│   │   │   ├── experiences.routes.ts # Interview experience CRUD & bookmarking
+│   │   │   ├── admin.routes.ts        # User management, moderation, college settings
+│   │   │   ├── applications.routes.ts # Placement application tracker CRUD
+│   │   │   ├── auth.routes.ts         # Login, session verification, profile update
+│   │   │   ├── companies.routes.ts    # Recruiter CRUD and criteria endpoints
+│   │   │   ├── experiences.routes.ts  # Experience CRUD, filters, helpful & bookmarks
+│   │   │   ├── mentorship.routes.ts   # Senior mentorship request & response endpoints
 │   │   │   ├── notifications.routes.ts # In-app notification management
-│   │   │   ├── placements.routes.ts # Placement stats & verified record CRUD
-│   │   │   ├── questions.routes.ts  # Student-senior Q&A discussion threads
-│   │   │   ├── resources.routes.ts  # Preparation roadmaps and cheat sheets
-│   │   │   └── seniors.routes.ts    # Senior directory & mentorship profiles
+│   │   │   ├── placements.routes.ts   # Placement stats, analytics & verified records
+│   │   │   ├── practice.routes.ts     # Practice Zone questions & attempt scoring
+│   │   │   ├── questions.routes.ts    # Student-senior Q&A discussion threads
+│   │   │   ├── readiness.routes.ts    # Placement readiness progress endpoints
+│   │   │   ├── resources.routes.ts    # Preparation roadmaps and cheat sheets
+│   │   │   └── seniors.routes.ts      # Senior directory & mentorship profiles
 │   │   ├── test/
-│   │   │   └── smoke.test.ts        # 23-point automated integration test suite
+│   │   │   └── smoke.test.ts          # 27-point automated integration test suite
 │   │   └── index.ts                 # Express application entry point
 │   ├── package.json
 │   ├── tsconfig.json
@@ -211,7 +220,7 @@ npm run dev
 
 ## 🧪 Automated Test Suite Verification
 
-CampusConnect includes an automated integration test suite (`server/src/test/smoke.test.ts`) covering all 23 core system invariants:
+CampusConnect includes an automated integration test suite (`server/src/test/smoke.test.ts`) covering all 27 core system invariants:
 
 ```bash
 cd server
