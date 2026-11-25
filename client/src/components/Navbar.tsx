@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Sparkles } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
 import { Notification } from '../types';
 import { NotificationModal } from './NotificationModal';
 
-export const Navbar: React.FC<{ title?: string; subtitle?: string }> = ({
+export const Navbar: React.FC<{ title?: string; subtitle?: string; onMenuClick?: () => void }> = ({
   title = 'Dashboard',
   subtitle = 'Welcome to CampusConnect Central Opportunity Hub',
+  onMenuClick,
 }) => {
   const { user, unreadCount } = useAuth();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -49,10 +50,19 @@ export const Navbar: React.FC<{ title?: string; subtitle?: string }> = ({
 
   return (
     <>
-      <header className="h-18 px-8 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between sticky top-0 z-20">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight font-sans">{title}</h1>
-          <p className="text-xs text-slate-400">{subtitle}</p>
+      <header className="h-18 px-4 sm:px-8 py-3 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between gap-3 sticky top-0 z-20">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 -ml-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+            aria-label="Open menu"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-white tracking-tight font-sans truncate">{title}</h1>
+            <p className="text-xs text-slate-400 truncate hidden sm:block">{subtitle}</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">

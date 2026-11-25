@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
@@ -21,12 +21,20 @@ import { HelpFaqPage } from './pages/HelpFaqPage';
 
 // Authenticated Layout Wrapper
 const DashboardLayout: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Close the mobile drawer whenever the user navigates
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
-    <div className="min-h-screen bg-slate-950 flex font-sans">
-      <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col min-w-0">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto">
+    <div className="min-h-screen bg-slate-950 flex font-sans overflow-x-hidden">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto min-w-0">
           <Outlet />
         </main>
       </div>

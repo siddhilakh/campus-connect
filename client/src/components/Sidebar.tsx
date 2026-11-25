@@ -20,7 +20,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
   const { user, logout } = useAuth();
   if (!user) return null;
 
@@ -47,7 +52,19 @@ export const Sidebar: React.FC = () => {
   const badge = roleBadge();
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-30 select-none">
+    <>
+    {/* Mobile backdrop */}
+    <div
+      onClick={onClose}
+      className={`fixed inset-0 bg-black/60 z-30 lg:hidden transition-opacity ${
+        isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
+    />
+    <aside
+      className={`fixed inset-y-0 left-0 w-64 max-w-[80vw] bg-slate-900 border-r border-slate-800 flex flex-col z-40 select-none transition-transform duration-200 lg:translate-x-0 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+    >
       {/* College & Brand Logo */}
       <div className="p-5 border-b border-slate-800">
         <div className="flex items-center gap-3">
@@ -313,5 +330,6 @@ export const Sidebar: React.FC = () => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
