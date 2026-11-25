@@ -184,31 +184,42 @@ export const CompaniesPage: React.FC = () => {
 
       {/* Company Detail Modal */}
       {selectedCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative my-8">
-            <button
-              onClick={() => setSelectedCompany(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-4 mb-4">
-              <img
-                src={selectedCompany.logo || 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100'}
-                alt={selectedCompany.name}
-                className="w-14 h-14 rounded-2xl object-contain bg-white p-1.5 border border-slate-700"
-              />
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold text-white">{selectedCompany.name}</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-300 border border-brand-500/20">
-                    {selectedCompany.tier}
-                  </span>
+        <div
+          onClick={() => setSelectedCompany(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+          >
+            <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-4">
+                <img
+                  src={selectedCompany.logo || 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100'}
+                  alt={selectedCompany.name}
+                  className="w-14 h-14 rounded-2xl object-contain bg-white p-1.5 border border-slate-700"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-white">{selectedCompany.name}</h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-300 border border-brand-500/20">
+                      {selectedCompany.tier}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">{selectedCompany.industry} · Batch {selectedCompany.batch}</p>
                 </div>
-                <p className="text-xs text-slate-400">{selectedCompany.industry} · Batch {selectedCompany.batch}</p>
               </div>
+              <button
+                onClick={() => setSelectedCompany(null)}
+                aria-label="Close modal"
+                title="Close"
+                className="text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 p-2 rounded-xl border border-slate-700 transition-colors shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
 
             <p className="text-xs text-slate-300 leading-relaxed mb-6">
               {selectedCompany.description}
@@ -266,6 +277,7 @@ export const CompaniesPage: React.FC = () => {
                   No interview experiences posted yet for this recruiter.
                 </p>
               )}
+              </div>
             </div>
           </div>
         </div>

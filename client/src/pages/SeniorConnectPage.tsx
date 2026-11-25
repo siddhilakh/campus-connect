@@ -299,95 +299,109 @@ export const SeniorConnectPage: React.FC = () => {
 
       {/* Experience Details Modal with Multi-Round Breakdown */}
       {selectedExp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative my-8">
-            <button
-              onClick={() => setSelectedExp(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-xl font-bold text-white">{selectedExp.company?.name} · {selectedExp.role}</h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                {selectedExp.outcome}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-4 text-xs text-slate-400 mb-6 pb-4 border-b border-slate-800">
-              <span>Author: {selectedExp.author?.name}</span>
-              <span>•</span>
-              <span>Batch: {selectedExp.batch}</span>
-              <span>•</span>
-              <span>Difficulty: {selectedExp.difficulty}</span>
-              {selectedExp.packageLpa && (
-                <>
+        <div
+          onClick={() => setSelectedExp(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+          >
+            {/* Fixed Modal Header with Close Button */}
+            <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-slate-800 shrink-0 bg-slate-900">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-xl font-bold text-white">{selectedExp.company?.name} · {selectedExp.role}</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    {selectedExp.outcome}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                  <span>Author: {selectedExp.author?.name}</span>
                   <span>•</span>
-                  <span className="text-emerald-400 font-mono font-bold">CTC: ₹{selectedExp.packageLpa} LPA</span>
-                </>
-              )}
+                  <span>Batch: {selectedExp.batch}</span>
+                  <span>•</span>
+                  <span>Difficulty: {selectedExp.difficulty}</span>
+                  {selectedExp.packageLpa && (
+                    <>
+                      <span>•</span>
+                      <span className="text-emerald-400 font-mono font-bold">CTC: ₹{selectedExp.packageLpa} LPA</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedExp(null)}
+                aria-label="Close modal"
+                title="Close"
+                className="text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 p-2 rounded-xl border border-slate-700 transition-colors shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Preparation Strategy */}
-            <div className="space-y-4 text-xs text-slate-300 mb-6">
-              <div>
-                <h4 className="font-bold text-white text-sm mb-1">Overall Experience Summary</h4>
-                <p className="leading-relaxed bg-slate-850 p-3.5 rounded-xl border border-slate-800">{selectedExp.overallSummary}</p>
+            {/* Scrollable Modal Body */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              {/* Preparation Strategy */}
+              <div className="space-y-4 text-xs text-slate-300">
+                <div>
+                  <h4 className="font-bold text-white text-sm mb-1">Overall Experience Summary</h4>
+                  <p className="leading-relaxed bg-slate-850 p-3.5 rounded-xl border border-slate-800">{selectedExp.overallSummary}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-white text-sm mb-1">Preparation Strategy & Tips</h4>
+                  <p className="leading-relaxed bg-slate-850 p-3.5 rounded-xl border border-slate-800">{selectedExp.preparationStrategy}</p>
+                </div>
               </div>
 
-              <div>
-                <h4 className="font-bold text-white text-sm mb-1">Preparation Strategy & Tips</h4>
-                <p className="leading-relaxed bg-slate-850 p-3.5 rounded-xl border border-slate-800">{selectedExp.preparationStrategy}</p>
-              </div>
-            </div>
-
-            {/* Detailed Rounds */}
-            <div className="space-y-3 mb-6">
-              <h4 className="font-bold text-sm text-white">Interview Rounds Breakdown</h4>
-              <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                {selectedExp.rounds?.map((r) => (
-                  <div key={r.roundNumber} className="p-4 rounded-xl bg-slate-850 border border-slate-800 space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-brand-300">Round {r.roundNumber}: {r.roundName}</span>
-                      {r.durationMinutes && <span className="text-slate-400">{r.durationMinutes} mins</span>}
-                    </div>
-                    {r.description && <p className="text-slate-300 leading-relaxed">{r.description}</p>}
-                    {r.questionsAsked && (
-                      <div className="mt-1 pt-1.5 border-t border-slate-800 text-slate-300">
-                        <span className="font-semibold text-slate-400">Questions asked: </span>
-                        <span>{r.questionsAsked}</span>
+              {/* Detailed Rounds */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-sm text-white">Interview Rounds Breakdown</h4>
+                <div className="space-y-3">
+                  {selectedExp.rounds?.map((r) => (
+                    <div key={r.roundNumber} className="p-4 rounded-xl bg-slate-850 border border-slate-800 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-brand-300">Round {r.roundNumber}: {r.roundName}</span>
+                        {r.durationMinutes && <span className="text-slate-400">{r.durationMinutes} mins</span>}
                       </div>
-                    )}
-                    {r.tips && (
-                      <div className="text-amber-400/90 text-[11px]">
-                        <span>Tip: </span>{r.tips}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Q&A Thread on this Experience */}
-            {selectedExp.questions && selectedExp.questions.length > 0 && (
-              <div className="pt-4 border-t border-slate-800">
-                <h4 className="font-bold text-sm text-white mb-2">Discussion & Questions</h4>
-                <div className="space-y-2 max-h-36 overflow-y-auto">
-                  {selectedExp.questions.map((q) => (
-                    <div key={q.id} className="p-3 rounded-lg bg-slate-850 text-xs space-y-1">
-                      <span className="font-bold text-slate-200">{q.title}</span>
-                      <p className="text-slate-400">{q.content}</p>
-                      {q.answers?.map((a) => (
-                        <div key={a.id} className="pl-3 border-l border-brand-500 text-brand-300 mt-1">
-                          {a.content}
+                      {r.description && <p className="text-slate-300 leading-relaxed">{r.description}</p>}
+                      {r.questionsAsked && (
+                        <div className="mt-1 pt-1.5 border-t border-slate-800 text-slate-300">
+                          <span className="font-semibold text-slate-400">Questions asked: </span>
+                          <span>{r.questionsAsked}</span>
                         </div>
-                      ))}
+                      )}
+                      {r.tips && (
+                        <div className="text-amber-400/90 text-[11px]">
+                          <span>Tip: </span>{r.tips}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
-            )}
+
+              {/* Q&A Thread on this Experience */}
+              {selectedExp.questions && selectedExp.questions.length > 0 && (
+                <div className="pt-4 border-t border-slate-800">
+                  <h4 className="font-bold text-sm text-white mb-2">Discussion & Questions</h4>
+                  <div className="space-y-2">
+                    {selectedExp.questions.map((q) => (
+                      <div key={q.id} className="p-3 rounded-lg bg-slate-850 text-xs space-y-1">
+                        <span className="font-bold text-slate-200">{q.title}</span>
+                        <p className="text-slate-400">{q.content}</p>
+                        {q.answers?.map((a) => (
+                          <div key={a.id} className="pl-3 border-l border-brand-500 text-brand-300 mt-1">
+                            {a.content}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
