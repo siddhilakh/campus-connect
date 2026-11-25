@@ -254,6 +254,8 @@ export interface PlacementApplication {
   role: string;
   status: ApplicationStatus;
   applicationDate: string;
+  interviewDate?: string | null;
+  applicationLink?: string | null;
   packageLpa?: number | null;
   notes?: string | null;
   createdAt: string;

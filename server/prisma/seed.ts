@@ -662,6 +662,8 @@ async function main() {
           companyName: 'Microsoft',
           role: 'Software Development Engineer I',
           status: 'Interview',
+          interviewDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+          applicationLink: 'https://careers.microsoft.com',
           packageLpa: 44.0,
           notes: 'Cleared Codility OA (3/3 problems). Technical Round 1 scheduled this Friday.'
         },
@@ -671,6 +673,8 @@ async function main() {
           companyName: 'TCS',
           role: 'TCS Digital Engineer',
           status: 'Assessment',
+          interviewDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+          applicationLink: 'https://nextstep.tcs.com',
           packageLpa: 7.0,
           notes: 'Registered for TCS NQT drive. Revising Quant & SQL.'
         },

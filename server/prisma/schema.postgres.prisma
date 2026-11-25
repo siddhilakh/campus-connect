@@ -311,8 +311,10 @@ model PlacementApplication {
   collegeId       String
   companyName     String
   role            String
-  status          String   @default("Interested") // Interested, Applied, Assessment, Interview, Selected, Rejected
-  applicationDate DateTime @default(now())
+  status          String    @default("Interested") // Interested, Applied, Assessment, Interview, Selected, Rejected
+  applicationDate DateTime  @default(now())
+  interviewDate   DateTime?
+  applicationLink String?
   packageLpa      Float?
   notes           String?
   createdAt       DateTime @default(now())

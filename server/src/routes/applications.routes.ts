@@ -44,7 +44,7 @@ router.get('/', authenticate, async (req: Request, res: Response): Promise<void>
 // POST /api/applications
 router.post('/', authenticate, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { companyName, role, status, applicationDate, packageLpa, notes } = req.body;
+    const { companyName, role, status, applicationDate, interviewDate, applicationLink, packageLpa, notes } = req.body;
 
     if (!companyName || !role) {
       res.status(400).json({ success: false, message: 'Company name and role are required.' });
@@ -61,6 +61,8 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
         role: role.trim(),
         status: cleanStatus,
         applicationDate: applicationDate ? new Date(applicationDate) : new Date(),
+        interviewDate: interviewDate ? new Date(interviewDate) : null,
+        applicationLink: applicationLink ? applicationLink.trim() : null,
         packageLpa: packageLpa ? parseFloat(packageLpa) : null,
         notes: notes || ''
       }
@@ -88,7 +90,7 @@ router.put('/:id', authenticate, async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    const { companyName, role, status, applicationDate, packageLpa, notes } = req.body;
+    const { companyName, role, status, applicationDate, interviewDate, applicationLink, packageLpa, notes } = req.body;
 
     const updated = await prisma.placementApplication.update({
       where: { id },
@@ -97,6 +99,8 @@ router.put('/:id', authenticate, async (req: Request, res: Response): Promise<vo
         role: role ?? existing.role,
         status: status && VALID_STATUSES.includes(status) ? status : existing.status,
         applicationDate: applicationDate ? new Date(applicationDate) : existing.applicationDate,
+        interviewDate: interviewDate !== undefined ? (interviewDate ? new Date(interviewDate) : null) : existing.interviewDate,
+        applicationLink: applicationLink !== undefined ? (applicationLink ? applicationLink.trim() : null) : existing.applicationLink,
         packageLpa: packageLpa !== undefined ? (packageLpa ? parseFloat(packageLpa) : null) : existing.packageLpa,
         notes: notes !== undefined ? notes : existing.notes
       }

@@ -11,7 +11,9 @@ import {
   ExternalLink,
   Search,
   CheckCircle2,
-  Bookmark
+  Bookmark,
+  BellRing,
+  Calendar
 } from 'lucide-react';
 import {
   BarChart,
@@ -29,27 +31,41 @@ import {
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
-import { PlacementStatistics, PlacementRecord, Company } from '../types';
+import { PlacementStatistics, PlacementRecord, Company, PlacementApplication } from '../types';
 
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<PlacementStatistics | null>(null);
   const [records, setRecords] = useState<PlacementRecord[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [reminders, setReminders] = useState<PlacementApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [statsRes, recordsRes, companiesRes] = await Promise.all([
+        const [statsRes, recordsRes, companiesRes, appsRes] = await Promise.all([
           api.getPlacementStats(),
           api.getPlacementRecords({ batch: 'ALL' }),
-          api.getCompanies({ status: 'ACTIVE' })
+          api.getCompanies({ status: 'ACTIVE' }),
+          api.getApplications()
         ]);
 
         if (statsRes.success) setStats(statsRes.statistics);
         if (recordsRes.success) setRecords(recordsRes.records.slice(0, 6));
         if (companiesRes.success) setCompanies(companiesRes.companies.slice(0, 4));
+        if (appsRes.success) {
+          const upcoming = (appsRes.applications as PlacementApplication[])
+            .filter((a) => {
+              if (!a.interviewDate || a.status === 'Rejected') return false;
+              const d = new Date(a.interviewDate);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              return d >= today;
+            })
+            .sort((a, b) => new Date(a.interviewDate!).getTime() - new Date(b.interviewDate!).getTime());
+          setReminders(upcoming.slice(0, 3));
+        }
       } catch (err) {
         console.error('Failed to load student dashboard:', err);
       } finally {
@@ -349,6 +365,47 @@ export const StudentDashboard: React.FC = () => {
                 <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-300 transition-colors" />
               </Link>
             </div>
+          </div>
+
+          {/* Upcoming Interview Reminders */}
+          <div className="p-5 rounded-2xl bg-slate-900 border border-amber-500/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
+                <BellRing className="w-4 h-4" />
+                <span>Upcoming Interview Reminders</span>
+              </div>
+              <Link to="/applications" className="text-[11px] text-brand-400 hover:text-brand-300 font-semibold">
+                Tracker →
+              </Link>
+            </div>
+            {reminders.length === 0 ? (
+              <p className="text-xs text-slate-400">
+                No upcoming interviews scheduled. Add interview dates in your Application Tracker.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {reminders.map((rem) => (
+                  <Link
+                    key={rem.id}
+                    to="/applications"
+                    className="block p-3 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-800 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-white text-xs truncate">{rem.companyName}</span>
+                      <span className="text-[10px] font-semibold text-amber-300 whitespace-nowrap flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(rem.interviewDate!).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-brand-400 truncate mt-0.5">{rem.role}</p>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Featured Upcoming Company Drive */}
